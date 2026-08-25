@@ -1,0 +1,190 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --color-bg: var(--c-bg);
+  --color-bg-alt: var(--c-bg-alt);
+  --color-surface: var(--c-surface);
+  --color-surface-2: var(--c-surface-2);
+  --color-border: var(--c-border);
+  --color-text: var(--c-text);
+  --color-text-muted: var(--c-text-muted);
+  --color-text-soft: var(--c-text-soft);
+
+  --color-primary-50: var(--c-primary-50);
+  --color-primary-100: var(--c-primary-100);
+  --color-primary-200: var(--c-primary-200);
+  --color-primary-400: var(--c-primary-400);
+  --color-primary-500: var(--c-primary-500);
+  --color-primary-600: var(--c-primary-600);
+  --color-primary-700: var(--c-primary-700);
+
+  --color-cat-fish: #3b82c4;
+  --color-cat-fish-bg: #e3f0fa;
+  --color-cat-seafood: #0d9488;
+  --color-cat-seafood-bg: #dcf6f1;
+  --color-cat-chicken: #d97706;
+  --color-cat-chicken-bg: #fdf1dd;
+  --color-cat-meat: #dc2626;
+  --color-cat-meat-bg: #fbe2e1;
+  --color-cat-pasta: #ca8a04;
+  --color-cat-pasta-bg: #fdf6dc;
+  --color-cat-rice: #92714a;
+  --color-cat-rice-bg: #f2e9dc;
+  --color-cat-legume: #7c5a3a;
+  --color-cat-legume-bg: #efe4d6;
+  --color-cat-breakfast: #db2777;
+  --color-cat-breakfast-bg: #fce3ef;
+  --color-cat-starter: #65a30d;
+  --color-cat-starter-bg: #eaf5d8;
+  --color-cat-intl: #7c3aed;
+  --color-cat-intl-bg: #ede3fd;
+  --color-cat-airfryer: #0891b2;
+  --color-cat-airfryer-bg: #dbf3f8;
+  --color-cat-mycook: #4f46e5;
+  --color-cat-mycook-bg: #e5e3fb;
+
+  --shadow-card: 0 1px 2px rgba(30, 30, 20, 0.04), 0 4px 14px rgba(30, 30, 20, 0.06);
+  --shadow-pop: 0 10px 40px rgba(20, 20, 15, 0.16);
+
+  --animate-slide-up: slide-up 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-pop: pop 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  @keyframes slide-up {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes pop {
+    0% { transform: scale(0.9); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+}
+
+:root {
+  --c-bg: #faf8f3;
+  --c-bg-alt: #f3f0e7;
+  --c-surface: #ffffff;
+  --c-surface-2: #f7f5ee;
+  --c-border: #eae5d8;
+  --c-text: #2a2822;
+  --c-text-muted: #6f6b5f;
+  --c-text-soft: #a3a08f;
+
+  --c-primary-50: #eef6f0;
+  --c-primary-100: #dcefe1;
+  --c-primary-200: #b7dec1;
+  --c-primary-400: #4c8f6a;
+  --c-primary-500: #2f6b4f;
+  --c-primary-600: #255a41;
+  --c-primary-700: #1c4632;
+
+  color-scheme: light;
+}
+
+.dark {
+  --c-bg: #141613;
+  --c-bg-alt: #1b1d19;
+  --c-surface: #202320;
+  --c-surface-2: #262924;
+  --c-border: #34372f;
+  --c-text: #edece5;
+  --c-text-muted: #a6a396;
+  --c-text-soft: #74705f;
+
+  --c-primary-50: #16281e;
+  --c-primary-100: #1c3226;
+  --c-primary-200: #2a4c38;
+  --c-primary-400: #5da77e;
+  --c-primary-500: #6bc491;
+  --c-primary-600: #82d1a3;
+  --c-primary-700: #a6e0bf;
+
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --c-bg: #141613;
+    --c-bg-alt: #1b1d19;
+    --c-surface: #202320;
+    --c-surface-2: #262924;
+    --c-border: #34372f;
+    --c-text: #edece5;
+    --c-text-muted: #a6a396;
+    --c-text-soft: #74705f;
+
+    --c-primary-50: #16281e;
+    --c-primary-100: #1c3226;
+    --c-primary-200: #2a4c38;
+    --c-primary-400: #5da77e;
+    --c-primary-500: #6bc491;
+    --c-primary-600: #82d1a3;
+    --c-primary-700: #a6e0bf;
+
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  overscroll-behavior-y: none;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  min-height: 100svh;
+}
+
+#root {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 999px;
+}
+
+input, textarea, select, button {
+  font-family: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+  /* Evita el retardo de ~300ms al tocar y el zoom por doble-toque en iOS/Android,
+     para que los botones respondan al instante como en una app nativa. */
+  touch-action: manipulation;
+}
+
+/* Las áreas arrastrables (dnd-kit) usan touch-action: none aparte, así que no
+   se ven afectadas por la regla anterior. */
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}

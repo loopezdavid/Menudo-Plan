@@ -1,0 +1,37 @@
+{
+  "name": "lista-de-la-compra",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "oxlint",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.120.0",
+    "@dnd-kit/core": "^6.3.1",
+    "@supabase/supabase-js": "^2.45.4",
+    "framer-motion": "^13.1.0",
+    "lucide-react": "^1.31.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.4",
+    "autoprefixer": "^10.5.4",
+    "oxlint": "^1.75.0",
+    "postcss": "^8.5.26",
+    "sharp": "^0.35.3",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.2.0",
+    "vite-plugin-pwa": "^1.3.0",
+    "vite-plugin-singlefile": "^2.3.3"
+  }
+}

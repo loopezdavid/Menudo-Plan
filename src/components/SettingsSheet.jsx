@@ -54,13 +54,12 @@ export default function SettingsSheet({ open, onClose }) {
   return (
     <Sheet open={open} onClose={onClose} title="Ajustes">
       <div className="flex flex-col gap-6 pb-8">
-        <section className="flex flex-col items-center text-center pt-1 pb-1">
+        <section className="flex flex-col items-center text-center pt-2 pb-1">
           <img
-            src="/logo-mark.png"
+            src="/logo-hero.png"
             alt="Menudo Plan"
-            className="h-20 w-20 rounded-2xl shadow-md mb-2.5"
+            className="h-28 w-auto mb-1"
           />
-          <p className="text-base font-bold text-text">Menudo Plan</p>
           <p className="text-[11.5px] text-text-muted mt-0.5">Tu planificador semanal de comidas</p>
         </section>
 

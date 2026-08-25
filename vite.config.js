@@ -11,7 +11,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'favicon.png', 'favicon-16.png', 'favicon-48.png', 'apple-touch-icon.png', 'logo-mark.png'],
+      includeAssets: ['favicon.ico', 'favicon.png', 'favicon-16.png', 'favicon-48.png', 'apple-touch-icon.png', 'logo-mark.png', 'logo-hero.png'],
       manifest: {
         name: 'Menudo Plan — Planificador de comidas',
         short_name: 'Menudo Plan',

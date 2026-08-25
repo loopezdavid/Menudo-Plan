@@ -53,16 +53,15 @@ export default function App() {
     <div className="flex flex-col min-h-svh bg-bg text-text w-full">
       <header className="sticky top-0 z-20 safe-top bg-bg/85 backdrop-blur-md border-b border-transparent md:border-border">
         <div className="mx-auto w-full max-w-md md:max-w-[1400px] flex items-center justify-between gap-4 px-5 pt-4 pb-2 md:px-8 lg:px-10 md:py-3.5">
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-3 min-w-0">
             <img
-              src="/logo-mark.png"
+              src="/logo-hero.png"
               alt="Menudo Plan"
-              className="h-10 w-10 rounded-2xl shadow-sm shrink-0"
+              className="h-12 sm:h-14 w-auto shrink-0"
             />
-            <div className="min-w-0">
-              <p className="text-[13px] font-medium text-primary-500 leading-none mb-1">Menudo Plan</p>
-              <h1 className="text-[22px] font-bold tracking-tight text-text leading-tight truncate">{TITLES[tab]}</h1>
-            </div>
+            <h1 className="min-w-0 truncate text-[15px] sm:text-[17px] font-semibold text-text-muted leading-tight">
+              {TITLES[tab]}
+            </h1>
           </div>
 
           <TopNav active={tab} onChange={setTab} badgeCount={pendingCount} />

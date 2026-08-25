@@ -54,6 +54,16 @@ export default function SettingsSheet({ open, onClose }) {
   return (
     <Sheet open={open} onClose={onClose} title="Ajustes">
       <div className="flex flex-col gap-6 pb-8">
+        <section className="flex flex-col items-center text-center pt-1 pb-1">
+          <img
+            src="/logo-mark.png"
+            alt="Menudo Plan"
+            className="h-20 w-20 rounded-2xl shadow-md mb-2.5"
+          />
+          <p className="text-base font-bold text-text">Menudo Plan</p>
+          <p className="text-[11.5px] text-text-muted mt-0.5">Tu planificador semanal de comidas</p>
+        </section>
+
         <section>
           <h3 className="text-[13px] font-semibold text-text-muted mb-2.5">Apariencia</h3>
           <div className="grid grid-cols-3 gap-2">
@@ -206,38 +216,11 @@ export default function SettingsSheet({ open, onClose }) {
         </section>
 
         <section>
-          <h3 className="text-[13px] font-semibold text-text-muted mb-2.5">Buscador de fotos (Google Imágenes)</h3>
-          <p className="text-[12px] text-text-muted leading-relaxed mb-3">
-            Al editar la foto de una receta puedes buscar fotos del plato en internet. Sin configurar esto usa
-            Wikimedia Commons (gratis, sin key, pero con poca cobertura para platos concretos en español). Si
-            configuras aquí Google Imágenes tendrás muchos más resultados.
-          </p>
-          <div className="rounded-2xl bg-surface-2 px-4 py-3">
-            <input
-              value={apiKeys?.googleSearchApiKey || ''}
-              onChange={(e) => setApiKey('googleSearchApiKey', e.target.value)}
-              placeholder="API key de Google Cloud"
-              className="w-full rounded-xl bg-surface border border-border focus:border-primary-200 focus:outline-none px-3 py-2 text-[13px] text-text placeholder:text-text-soft"
-            />
-            <input
-              value={apiKeys?.googleSearchCx || ''}
-              onChange={(e) => setApiKey('googleSearchCx', e.target.value)}
-              placeholder="Search engine ID (cx)"
-              className="w-full rounded-xl bg-surface border border-border focus:border-primary-200 focus:outline-none px-3 py-2 text-[13px] text-text placeholder:text-text-soft mt-2"
-            />
-            <p className="text-[10.5px] text-text-muted mt-1.5 leading-relaxed">
-              Hace falta: 1) un motor en programmablesearchengine.google.com con "Buscar imágenes" y "Buscar en
-              toda la web" activados (de ahí sacas el cx) — 2) una API key en console.cloud.google.com con la
-              "Custom Search API" habilitada. Gratis hasta 100 búsquedas/día, luego de pago.
-            </p>
-          </div>
-        </section>
-
-        <section>
           <h3 className="text-[13px] font-semibold text-text-muted mb-2.5">Acerca de</h3>
           <p className="text-[13px] text-text-muted leading-relaxed">
-            MenuSemanal guarda todo en este dispositivo (sin conexión ni cuentas). Puedes instalarla como
-            aplicación desde el menú del navegador para usarla como una app nativa.
+            Menudo Plan sincroniza tus recetas, tu plan semanal y tu lista de la compra entre tus
+            dispositivos. Puedes instalarla como aplicación desde el menú del navegador para usarla como
+            una app nativa.
           </p>
         </section>
 

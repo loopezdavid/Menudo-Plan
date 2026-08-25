@@ -11,20 +11,21 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['favicon.ico', 'favicon.png', 'favicon-16.png', 'favicon-48.png', 'apple-touch-icon.png', 'logo-mark.png'],
       manifest: {
-        name: 'MenuSemanal — Planificador de comidas',
-        short_name: 'MenuSemanal',
-        description: 'Organiza tus comidas de la semana y genera la lista de la compra automáticamente',
+        name: 'Menudo Plan — Planificador de comidas',
+        short_name: 'Menudo Plan',
+        description:
+          'Menudo Plan es tu planificador semanal de comidas: elige que comer cada dia, guarda recetas con foto e ingredientes, y genera automaticamente la lista de la compra.',
         lang: 'es',
         theme_color: '#2f6b4f',
         background_color: '#faf8f3',
         display: 'standalone',
         start_url: '/',
         icons: [
-          { src: 'pwa-192.svg', sizes: '192x192', type: 'image/svg+xml', purpose: 'any' },
-          { src: 'pwa-512.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'any' },
-          { src: 'pwa-maskable.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'maskable' },
+          { src: 'pwa-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'pwa-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'pwa-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {

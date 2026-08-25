@@ -2,18 +2,47 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/pwa-192.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1" />
     <meta name="theme-color" content="#2f6b4f" />
-    <meta name="description" content="Organiza tus comidas de la semana para dos y genera la lista de la compra automáticamente." />
+    <meta name="description" content="Menudo Plan es tu planificador semanal de comidas: elige que comer cada dia, guarda recetas con foto e ingredientes (a mano, con IA o buscandolas online), y genera automaticamente la lista de la compra, con cantidades sumadas y organizada por categorias. Instalable como app en el movil." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <title>MenuSemanal</title>
+    <title>Menudo Plan</title>
+    <style>
+      #app-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #faf8f3;
+      }
+      #app-splash img {
+        width: 96px;
+        height: 96px;
+        border-radius: 22px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        animation: app-splash-pulse 1.6s ease-in-out infinite;
+      }
+      @keyframes app-splash-pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.05); opacity: 0.85; }
+      }
+      /* En cuanto React monta contenido dentro de #root, #root deja de estar
+         vacío y este selector oculta el splash sin necesidad de JS. */
+      #root:not(:empty) ~ #app-splash { display: none; }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+    <div id="app-splash" aria-hidden="true">
+      <img src="/logo-mark.png" alt="" />
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

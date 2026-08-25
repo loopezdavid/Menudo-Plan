@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 import { Sun, Moon, Monitor, Minus, Plus, Users, ChevronDown, Image as ImageIcon, Globe, Check, Sparkles } from 'lucide-react'
 import Sheet from './ui/Sheet'
 import { useStore } from '../store/useStore'
@@ -50,15 +51,19 @@ export default function SettingsSheet({ open, onClose }) {
   const setAiEngine = useStore((s) => s.setAiEngine)
   const [creditsOpen, setCreditsOpen] = useState(false)
   const activeAiConfig = AI_ENGINE_CONFIG[aiEngine] || AI_ENGINE_CONFIG.claude
+  const reduceMotion = useReducedMotion()
 
   return (
     <Sheet open={open} onClose={onClose} title="Ajustes">
       <div className="flex flex-col gap-6 pb-8">
         <section className="flex flex-col items-center text-center pt-2 pb-1">
-          <img
+          <motion.img
             src="/logo-hero.png"
             alt="Menudo Plan"
-            className="h-28 w-auto mb-1"
+            className="h-32 w-auto mb-1"
+            initial={reduceMotion ? false : { opacity: 0, scale: 0.92, y: -4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 22 }}
           />
           <p className="text-[11.5px] text-text-muted mt-0.5">Tu planificador semanal de comidas</p>
         </section>

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 import { Settings } from 'lucide-react'
 import BottomNav from './components/BottomNav'
 import TopNav from './components/TopNav'
@@ -20,6 +21,7 @@ const TITLES = {
 
 export default function App() {
   useTheme()
+  const reduceMotion = useReducedMotion()
   const [tab, setTab] = useState('week')
   const [settingsOpen, setSettingsOpen] = useState(false)
 
@@ -52,27 +54,31 @@ export default function App() {
   return (
     <div className="flex flex-col min-h-svh bg-bg text-text w-full">
       <header className="sticky top-0 z-20 safe-top bg-bg/85 backdrop-blur-md border-b border-transparent md:border-border">
-        <div className="mx-auto w-full max-w-md md:max-w-[1400px] flex items-center justify-between gap-4 px-5 pt-4 pb-2 md:px-8 lg:px-10 md:py-3.5">
-          <div className="flex items-center gap-3 min-w-0">
-            <img
-              src="/logo-hero.png"
-              alt="Menudo Plan"
-              className="h-12 sm:h-14 w-auto shrink-0"
-            />
-            <h1 className="min-w-0 truncate text-[15px] sm:text-[17px] font-semibold text-text-muted leading-tight">
-              {TITLES[tab]}
-            </h1>
-          </div>
-
-          <TopNav active={tab} onChange={setTab} badgeCount={pendingCount} />
+        <div className="relative mx-auto w-full max-w-md md:max-w-[1400px] flex items-center justify-center px-16 pt-3.5 pb-1 md:px-8 lg:px-10 md:pt-4">
+          <motion.img
+            src="/logo-hero.png"
+            alt="Menudo Plan"
+            className="h-16 sm:h-20 w-auto"
+            initial={reduceMotion ? false : { opacity: 0, scale: 0.9, y: -6 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+          />
 
           <IconButton
             onClick={() => setSettingsOpen(true)}
-            className="h-10 w-10 bg-surface border border-border text-text-muted shadow-sm shrink-0"
+            className="absolute right-5 md:right-8 lg:right-10 top-1/2 -translate-y-1/2 h-10 w-10 bg-surface border border-border text-text-muted shadow-sm shrink-0"
             aria-label="Ajustes"
           >
             <Settings size={19} />
           </IconButton>
+        </div>
+
+        <div className="mx-auto w-full max-w-md md:max-w-[1400px] flex items-center justify-between gap-4 px-5 pb-2.5 md:px-8 lg:px-10 md:pb-3.5">
+          <h1 className="min-w-0 truncate text-[13px] sm:text-[14px] font-semibold text-text-muted leading-none tracking-tight">
+            {TITLES[tab]}
+          </h1>
+
+          <TopNav active={tab} onChange={setTab} badgeCount={pendingCount} />
         </div>
       </header>
 

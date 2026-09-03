@@ -176,7 +176,7 @@ export default function ImportRecipeSheet({ open, onClose, onSaved }) {
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={8}
-            placeholder="Pega aquí el texto de una receta (de una web, una nota, un mensaje...)"
+            placeholder="Pega el texto de una receta, o escribe solo el nombre de un plato (p.ej. «tortilla de patatas») y te la genera"
             className="w-full rounded-2xl bg-surface-2 border border-transparent focus:border-primary-200 focus:outline-none px-3.5 py-3 text-sm text-text placeholder:text-text-soft resize-none"
           />
           <button

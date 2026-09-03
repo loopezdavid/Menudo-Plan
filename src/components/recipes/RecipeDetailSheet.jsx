@@ -16,12 +16,6 @@ function formatQty(qty, unit) {
   return `${rounded % 1 === 0 ? rounded : rounded.toFixed(1)} ${unit}`
 }
 
-function uid() {
-  return typeof crypto !== 'undefined' && crypto.randomUUID
-    ? crypto.randomUUID()
-    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
-}
-
 // El catálogo local guarda los ingredientes por ingredientId (sin "name"
 // propio, se resuelve al mostrarlo). Para poder editarlos en RecipeForm hace
 // falta el nombre ya resuelto en cada ingrediente.
@@ -36,18 +30,13 @@ function withResolvedIngredientNames(recipe) {
 }
 
 export default function RecipeDetailSheet({ recipeId, open, onClose }) {
-  const [displayId, setDisplayId] = useState(recipeId)
   const [editOpen, setEditOpen] = useState(false)
-  const recipe = displayId ? getAnyRecipe(displayId) : null
+  const recipe = recipeId ? getAnyRecipe(recipeId) : null
   const [servings, setServings] = useState(2)
   const [addOpen, setAddOpen] = useState(false)
   const favorites = useStore((s) => s.favorites)
   const toggleFavorite = useStore((s) => s.toggleFavorite)
   const cacheExternalRecipe = useStore((s) => s.cacheExternalRecipe)
-
-  useEffect(() => {
-    setDisplayId(recipeId)
-  }, [recipeId])
 
   useEffect(() => {
     if (recipe) setServings(recipe.servings || 4)
@@ -59,25 +48,12 @@ export default function RecipeDetailSheet({ recipeId, open, onClose }) {
   const primaryTag = CATEGORY_TAGS[recipe.categories[0]]
   const isExternal = recipe.source && recipe.source !== 'local'
 
-  // Las recetas ya guardadas como propias/importadas (isExternal) se editan
-  // in situ, con el mismo id. Las del catálogo local no se pueden sobrescribir
-  // sin desincronizar el recetario y las listas — en su lugar, editarlas crea
-  // una copia personal editable (nueva receta), dejando el original intacto.
+  // Editar guarda siempre un override con el MISMO id en externalRecipes
+  // (getAnyRecipe le da prioridad sobre el catálogo local — ver recipeLookup.js),
+  // así que sustituye a la receta de verdad en vez de crear una copia aparte:
+  // el calendario, favoritos y la lista de la compra siguen apuntando al mismo id.
   function handleEditSave(updated) {
-    if (isExternal) {
-      cacheExternalRecipe(updated)
-      setDisplayId(updated.id)
-    } else {
-      const forkedId = `custom:${uid()}`
-      cacheExternalRecipe({
-        ...updated,
-        id: forkedId,
-        source: 'custom',
-        sourceLabel: 'Copia editada',
-        sourceUrl: null,
-      })
-      setDisplayId(forkedId)
-    }
+    cacheExternalRecipe(updated)
     setEditOpen(false)
   }
 
@@ -106,12 +82,6 @@ export default function RecipeDetailSheet({ recipeId, open, onClose }) {
       >
         {editOpen ? (
           <>
-            {!isExternal && (
-              <p className="text-[12px] text-text-muted -mt-1 mb-3">
-                Esta receta es del recetario base — al guardar se creará una copia personal editable, sin tocar
-                la original.
-              </p>
-            )}
             <RecipeForm
               recipe={withResolvedIngredientNames(recipe)}
               onSave={handleEditSave}
@@ -152,7 +122,7 @@ export default function RecipeDetailSheet({ recipeId, open, onClose }) {
               onClick={() => setEditOpen(true)}
               className="h-9 w-9 rounded-full bg-surface-2 flex items-center justify-center active:scale-90 transition"
               aria-label="Editar receta"
-              title={isExternal ? 'Editar receta' : 'Editar (crea una copia personal)'}
+              title="Editar receta"
             >
               <Pencil size={15} className="text-text-muted" />
             </button>

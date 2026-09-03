@@ -38,11 +38,12 @@ export default function TrayRecipeCard({ recipe, onView, onQuickAdd }) {
       </div>
       <button
         type="button"
+        onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => {
           e.stopPropagation()
           onQuickAdd(recipe.id)
         }}
-        className="h-7 w-7 shrink-0 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center active:scale-90 transition"
+        className="h-7 w-7 shrink-0 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center active:scale-90 transition touch-none"
         aria-label="Añadir al calendario"
       >
         <CalendarPlus size={13} />

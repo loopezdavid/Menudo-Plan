@@ -11,14 +11,16 @@ export const AI_ENGINES = {
   openrouter: { label: 'OpenRouter', loader: () => import('./aiProviders/openrouter') },
 }
 
-const PROMPT = `Extrae una receta de cocina del contenido que te paso a continuación (puede ser el texto de una página web, una foto de una receta o un fragmento pegado por el usuario).
+const PROMPT = `Tu tarea es conseguir una receta de cocina completa y utilizable a partir del contenido que te paso a continuación (puede ser el texto de una página web, una foto de una receta, o solo el nombre de un plato escrito por el usuario).
 
 Reglas:
-- Si no hay ninguna receta reconocible en el contenido, responde con found=false y el resto de campos vacíos.
-- Mantén el idioma original de la receta (no traduzcas).
+- Si el contenido ya describe una receta (tiene ingredientes y/o pasos), extráela tal cual — no inventes ni cambies cantidades ni pasos que ya estén.
+- Si el contenido es solo el nombre de un plato o una descripción corta sin ingredientes ni pasos (p.ej. "tortilla de patatas", "curry de garbanzos", "pollo al ajillo"), NO respondas found=false — en su lugar, genera tú una receta completa y típica para ese plato: ingredientes con cantidades razonables para 4 personas y pasos de preparación claros.
+- Responde found=false únicamente si el contenido no tiene relación alguna con un plato o receta de cocina reconocible (p.ej. es un texto sobre otro tema, una foto sin comida, o está vacío/ilegible).
+- Mantén el idioma del contenido original (no traduzcas). Si solo te dan el nombre de un plato sin más contexto de idioma, responde en español.
 - Cada ingrediente debe llevar cantidad numérica y unidad (g, ml, ud, cucharada, diente, etc.) por separado del nombre — si el original dice "al gusto" o no da cantidad, usa quantity=1 y unit con esa aclaración.
 - "steps" son los pasos de preparación, uno por elemento, sin numerarlos tú (ya se numeran en la app).
-- servings/timeMinutes/imageUrl: null si no aparecen, no los inventes.`
+- servings/timeMinutes: usa valores típicos razonables si no aparecen y has tenido que generar la receta; si extraes una receta ya existente y no los da, dejalos null. imageUrl: null salvo que el contenido incluya de verdad una URL de foto del plato.`
 
 function uid() {
   return typeof crypto !== 'undefined' && crypto.randomUUID

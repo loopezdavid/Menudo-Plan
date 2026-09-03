@@ -1,9 +1,11 @@
 import { createPortal } from 'react-dom'
 import { useEffect } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useDragControls } from 'framer-motion'
 import { X } from 'lucide-react'
 
 export default function Sheet({ open, onClose, title, children, footer, maxHeight = '86svh' }) {
+  const dragControls = useDragControls()
+
   useEffect(() => {
     if (!open) return
     function handleKey(e) {
@@ -32,8 +34,19 @@ export default function Sheet({ open, onClose, title, children, footer, maxHeigh
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 32, stiffness: 320 }}
+            drag="y"
+            dragControls={dragControls}
+            dragListener={false}
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.6 }}
+            onDragEnd={(_, info) => {
+              if (info.offset.y > 110 || info.velocity.y > 600) onClose()
+            }}
           >
-            <div className="flex items-center justify-center pt-2.5 pb-1 shrink-0">
+            <div
+              onPointerDown={(e) => dragControls.start(e)}
+              className="flex items-center justify-center pt-2.5 pb-1.5 px-8 shrink-0 touch-none cursor-grab active:cursor-grabbing"
+            >
               <div className="h-1.5 w-10 rounded-full bg-border" />
             </div>
             {title && (

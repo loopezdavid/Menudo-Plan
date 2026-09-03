@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Check } from 'lucide-react'
+import { Check, Trash2 } from 'lucide-react'
 import Sheet from '../ui/Sheet'
 import { DAYS, SLOTS } from '../../data/initialWeekPlan'
 import { useStore } from '../../store/useStore'
@@ -11,12 +11,18 @@ export default function AddToCalendarSheet({ open, onClose, recipeId }) {
   const activeWeekKey = useStore((s) => s.activeWeekKey)
   const weekPlan = useStore((s) => s.weekPlans[activeWeekKey])
   const setMeal = useStore((s) => s.setMeal)
+  const removeMeal = useStore((s) => s.removeMeal)
   const recipe = getAnyRecipe(recipeId)
   if (!recipe) return null
 
   function handlePick(slotKey) {
     setMeal(activeWeekKey, dayKey, slotKey, recipeId)
     onClose()
+  }
+
+  function handleRemove(e, slotKey) {
+    e.stopPropagation()
+    removeMeal(activeWeekKey, dayKey, slotKey)
   }
 
   return (
@@ -58,8 +64,23 @@ export default function AddToCalendarSheet({ open, onClose, recipeId }) {
                   {currentRecipe ? currentRecipe.name : 'Hueco vacío'}
                 </p>
               </div>
-              <span className="shrink-0 h-7 w-7 rounded-full bg-primary-50 text-primary-500 flex items-center justify-center">
-                <Check size={15} />
+              <span className="flex items-center gap-1.5 shrink-0">
+                {currentRecipe && (
+                  <span
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={(e) => handleRemove(e, slot.key)}
+                    role="button"
+                    tabIndex={0}
+                    className="h-7 w-7 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center active:scale-90 transition"
+                    aria-label="Quitar de este hueco"
+                    title="Quitar de este hueco"
+                  >
+                    <Trash2 size={14} />
+                  </span>
+                )}
+                <span className="h-7 w-7 rounded-full bg-primary-50 text-primary-500 flex items-center justify-center">
+                  <Check size={15} />
+                </span>
               </span>
             </button>
           )

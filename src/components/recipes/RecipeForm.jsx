@@ -142,7 +142,7 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
         setImageError(
           googleReady
             ? 'No he encontrado fotos para ese nombre ni en Google ni en Wikimedia Commons. Prueba con otro término.'
-            : 'No he encontrado fotos para ese nombre en Wikimedia Commons. Prueba con otro término (en inglés suele dar mejores resultados), o configura Google Imágenes en Ajustes para más cobertura.'
+            : 'No he encontrado fotos para ese nombre en Wikimedia Commons. Prueba con otro término, o configura Google Imágenes en Ajustes → Buscar fotos de platos para más cobertura.'
         )
       } else if (autoPick) {
         await handlePickSearchResult(results[0], 0)
@@ -255,7 +255,7 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
         </div>
         {!googleReady && (
           <p className="text-[10.5px] text-text-muted mt-1.5">
-            Busca en Wikimedia Commons. Para buscar en Google Imágenes (mejor cobertura para platos concretos), configura tu key en Ajustes → Importar con IA.
+            Busca en Wikimedia Commons (traduce el nombre si hace falta). Para buscar también en Google Imágenes (mejor cobertura para platos concretos), configura tu key en Ajustes → Buscar fotos de platos.
           </p>
         )}
 

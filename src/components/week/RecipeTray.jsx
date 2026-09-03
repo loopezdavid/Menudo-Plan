@@ -1,16 +1,33 @@
 import { useMemo, useState } from 'react'
+import { motion, useDragControls } from 'framer-motion'
 import { Search, X, ChevronUp, ChevronDown, BookOpenText } from 'lucide-react'
 import TrayRecipeCard from './TrayRecipeCard'
 import Chip from '../ui/Chip'
 import { RECIPES } from '../../data/recipes'
 import { CATEGORY_TAGS } from '../../data/categoryTags'
 import { filterRecipes } from '../../utils/recipeFilter'
+import { useStore } from '../../store/useStore'
 
 export default function RecipeTray({ open, onToggleOpen, onView, onQuickAdd }) {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState(null)
+  const dragControls = useDragControls()
 
-  const results = useMemo(() => filterRecipes(RECIPES, { query, category }), [query, category])
+  function handleDragEnd(_, info) {
+    const openingIntent = info.offset.y < -40 || info.velocity.y < -500
+    const closingIntent = info.offset.y > 40 || info.velocity.y > 500
+    if (!open && openingIntent) onToggleOpen()
+    else if (open && closingIntent) onToggleOpen()
+  }
+
+  const externalRecipes = useStore((s) => s.externalRecipes)
+  const myRecipes = useMemo(
+    () => Object.values(externalRecipes).filter((r) => r.source === 'custom' || r.source === 'ai'),
+    [externalRecipes]
+  )
+  const allRecipes = useMemo(() => [...myRecipes, ...RECIPES], [myRecipes])
+
+  const results = useMemo(() => filterRecipes(allRecipes, { query, category }), [allRecipes, query, category])
 
   const filters = (
     <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
@@ -50,10 +67,25 @@ export default function RecipeTray({ open, onToggleOpen, onView, onQuickAdd }) {
           open ? 'translate-y-0' : 'translate-y-[calc(100%-44px)]'
         }`}
       >
-        <div className="mx-3 rounded-t-3xl border border-border border-b-0 bg-surface/97 backdrop-blur-md shadow-pop overflow-hidden">
+        <motion.div
+          className="mx-3 rounded-t-3xl border border-border border-b-0 bg-surface/97 backdrop-blur-md shadow-pop overflow-hidden"
+          drag="y"
+          dragControls={dragControls}
+          dragListener={false}
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={{ top: 0.6, bottom: 0.6 }}
+          onDragEnd={handleDragEnd}
+        >
+          <div
+            onPointerDown={(e) => dragControls.start(e)}
+            className="flex justify-center pt-2 pb-0.5 touch-none cursor-grab active:cursor-grabbing"
+          >
+            <div className="h-1.5 w-10 rounded-full bg-border" />
+          </div>
           <button
+            onPointerDown={(e) => dragControls.start(e)}
             onClick={onToggleOpen}
-            className="flex w-full items-center justify-center gap-1.5 py-2.5 active:bg-surface-2 transition"
+            className="flex w-full items-center justify-center gap-1.5 py-2 touch-none active:bg-surface-2 transition"
           >
             <BookOpenText size={14} className="text-primary-500" />
             <span className="text-[12.5px] font-semibold text-text">Recetario</span>
@@ -75,7 +107,7 @@ export default function RecipeTray({ open, onToggleOpen, onView, onQuickAdd }) {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* ---- Escritorio: barra lateral fija ---- */}

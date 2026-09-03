@@ -19,41 +19,27 @@ async function api(params) {
   return res.json()
 }
 
+async function wikidataApi(params) {
+  const url = `https://www.wikidata.org/w/api.php?${new URLSearchParams({ ...params, format: 'json', origin: '*' })}`
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`Wikidata ${res.status}`)
+  return res.json()
+}
+
 function stripHtml(str) {
   return str ? str.replace(/<[^>]+>/g, '').trim() : ''
 }
 
-export async function searchDishPhotos(query, limit = 9) {
-  const trimmed = query.trim()
-  if (!trimmed) return []
-
-  const data = await api({
-    action: 'query',
-    list: 'search',
-    srnamespace: '6',
-    srlimit: String(limit * 2),
-    srsearch: `${trimmed} filetype:bitmap`,
-  })
-  const results = data?.query?.search || []
-  const clean = results
-    .filter((r) => {
-      const t = r.title.toLowerCase()
-      if (!/\.(jpe?g|png|webp)$/.test(t)) return false
-      return !BAD_TITLE_WORDS.some((w) => t.includes(w))
-    })
-    .slice(0, limit)
-  if (!clean.length) return []
-
+async function imageInfoForTitles(titles) {
+  if (!titles.length) return []
   const info = await api({
     action: 'query',
-    titles: clean.map((r) => r.title).join('|'),
+    titles: titles.join('|'),
     prop: 'imageinfo',
     iiprop: 'url|extmetadata',
     iiurlwidth: '500',
   })
   const pages = Object.values(info?.query?.pages || {})
-  const order = clean.map((r) => r.title)
-
   return pages
     .map((page) => {
       const ii = page.imageinfo?.[0]
@@ -68,7 +54,91 @@ export async function searchDishPhotos(query, limit = 9) {
       }
     })
     .filter(Boolean)
-    .sort((a, b) => order.indexOf(a.title) - order.indexOf(b.title))
+}
+
+async function commonsSearch(query, limit) {
+  const data = await api({
+    action: 'query',
+    list: 'search',
+    srnamespace: '6',
+    srlimit: String(limit * 2),
+    srsearch: `${query} filetype:bitmap`,
+  })
+  const results = data?.query?.search || []
+  const clean = results
+    .filter((r) => {
+      const t = r.title.toLowerCase()
+      if (!/\.(jpe?g|png|webp)$/.test(t)) return false
+      return !BAD_TITLE_WORDS.some((w) => t.includes(w))
+    })
+    .slice(0, limit)
+  if (!clean.length) return []
+
+  const order = clean.map((r) => r.title)
+  const files = await imageInfoForTitles(clean.map((r) => r.title))
+  return files.sort((a, b) => order.indexOf(a.title) - order.indexOf(b.title))
+}
+
+// Wikimedia Commons indexa sobre todo en inglés (títulos de archivo y
+// categorías), así que buscar un plato en español casi nunca da resultado.
+// Wikidata sí es multilingüe: buscamos el nombre en español, y del elemento
+// que encuentre sacamos su etiqueta en inglés (para reintentar la búsqueda en
+// Commons) y, si lo tiene, su foto "oficial" (propiedad P18) para usarla
+// directamente sin depender de una búsqueda de texto.
+async function findEnglishNameAndImage(query) {
+  try {
+    const search = await wikidataApi({
+      action: 'wbsearchentities',
+      search: query,
+      language: 'es',
+      type: 'item',
+      limit: '3',
+    })
+    const candidates = search?.search || []
+    if (!candidates.length) return null
+
+    const entitiesData = await wikidataApi({
+      action: 'wbgetentities',
+      ids: candidates.map((c) => c.id).join('|'),
+      props: 'labels|claims',
+      languages: 'en',
+    })
+
+    for (const candidate of candidates) {
+      const entity = entitiesData?.entities?.[candidate.id]
+      if (!entity) continue
+      const enLabel = entity.labels?.en?.value || null
+      const imageFilename = entity.claims?.P18?.[0]?.mainsnak?.datavalue?.value || null
+      if (enLabel || imageFilename) return { enLabel, imageFilename }
+    }
+  } catch {
+    return null
+  }
+  return null
+}
+
+export async function searchDishPhotos(query, limit = 9) {
+  const trimmed = query.trim()
+  if (!trimmed) return []
+
+  let results = await commonsSearch(trimmed, limit)
+  if (results.length) return results
+
+  const translated = await findEnglishNameAndImage(trimmed)
+  if (!translated) return []
+
+  if (translated.imageFilename) {
+    const direct = await imageInfoForTitles([`File:${translated.imageFilename}`])
+    if (direct.length) results = [...direct, ...results]
+  }
+
+  if (results.length < limit && translated.enLabel && translated.enLabel.toLowerCase() !== trimmed.toLowerCase()) {
+    const more = await commonsSearch(translated.enLabel, limit)
+    const seen = new Set(results.map((r) => r.title))
+    results = [...results, ...more.filter((r) => !seen.has(r.title))]
+  }
+
+  return results.slice(0, limit)
 }
 
 // Búsqueda de imágenes de Google (Custom Search JSON API), bring-your-own-key

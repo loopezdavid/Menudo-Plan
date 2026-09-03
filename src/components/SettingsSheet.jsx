@@ -225,6 +225,52 @@ export default function SettingsSheet({ open, onClose }) {
         </section>
 
         <section>
+          <h3 className="text-[13px] font-semibold text-text-muted mb-2.5">Buscar fotos de platos</h3>
+          <p className="text-[12px] text-text-muted leading-relaxed mb-3">
+            Al añadir o editar una receta, "Buscar fotos" usa estas fuentes para encontrar una imagen del
+            plato. Wikimedia Commons ya está activo (traduce automáticamente el nombre si hace falta), y
+            puedes añadir Google Imágenes para mucha más cobertura, sobre todo con platos caseros o en
+            español.
+          </p>
+
+          <div className="flex items-center gap-2.5 rounded-2xl bg-surface-2 px-4 py-3 mb-3">
+            <span className="h-7 w-7 shrink-0 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center">
+              <Check size={14} />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-text">Wikimedia Commons</p>
+              <p className="text-[11px] text-text-muted">Activo · gratis · sin configuración</p>
+            </div>
+          </div>
+
+          <div className="rounded-2xl bg-surface-2 px-4 py-3">
+            <div className="flex items-center gap-2 mb-2">
+              <ImageIcon size={14} className="text-text-muted" />
+              <p className="text-sm font-semibold text-text">Google Imágenes</p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <input
+                value={apiKeys?.googleSearchApiKey || ''}
+                onChange={(e) => setApiKey('googleSearchApiKey', e.target.value)}
+                placeholder="API key"
+                className="w-full rounded-xl bg-surface border border-border focus:border-primary-200 focus:outline-none px-3 py-2 text-[13px] text-text placeholder:text-text-soft"
+              />
+              <input
+                value={apiKeys?.googleSearchCx || ''}
+                onChange={(e) => setApiKey('googleSearchCx', e.target.value)}
+                placeholder="ID del motor de búsqueda (cx)"
+                className="w-full rounded-xl bg-surface border border-border focus:border-primary-200 focus:outline-none px-3 py-2 text-[13px] text-text placeholder:text-text-soft"
+              />
+            </div>
+            <p className="text-[10.5px] text-text-muted mt-1.5">
+              Gratis hasta 100 búsquedas/día. Crea una API key en console.cloud.google.com (activa "Custom
+              Search API") y un motor en programmablesearchengine.google.com con "Buscar imágenes" y
+              "Buscar en toda la web" activados — copia aquí la key y el ID del motor (cx).
+            </p>
+          </div>
+        </section>
+
+        <section>
           <h3 className="text-[13px] font-semibold text-text-muted mb-2.5">Importar con IA</h3>
           <p className="text-[12px] text-text-muted leading-relaxed mb-3">
             En el recetario, "Importar receta" puede leer una receta a partir de un texto pegado, una URL o una

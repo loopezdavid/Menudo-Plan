@@ -32,7 +32,7 @@ const SCHEMA = {
   required: ['found', 'name', 'ingredients', 'steps'],
 }
 
-async function callGemini(modelId, parts, apiKey) {
+async function callGemini(modelId, parts, apiKey, schema) {
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelId)}:generateContent?key=${encodeURIComponent(apiKey)}`,
     {
@@ -40,7 +40,7 @@ async function callGemini(modelId, parts, apiKey) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts }],
-        generationConfig: { response_mime_type: 'application/json', response_schema: SCHEMA },
+        generationConfig: { response_mime_type: 'application/json', response_schema: schema },
       }),
     }
   )
@@ -48,19 +48,20 @@ async function callGemini(modelId, parts, apiKey) {
   return { res, data }
 }
 
-export async function extract({ instructionText, bodyText, image, apiKey, model }) {
+export async function extract({ instructionText, bodyText, image, apiKey, model, responseSchema }) {
   if (!apiKey) throw new Error('Falta la API key de Gemini (Ajustes → Importar con IA).')
 
   const parts = [{ text: bodyText ? `${instructionText}\n\n${bodyText}` : instructionText }]
   if (image) parts.push({ inline_data: { mime_type: image.mediaType, data: image.base64 } })
 
   const modelId = model?.trim() || DEFAULT_MODEL
-  let { res, data } = await callGemini(modelId, parts, apiKey)
+  const schema = responseSchema || SCHEMA
+  let { res, data } = await callGemini(modelId, parts, apiKey, schema)
 
   // El modelo puede haber quedado obsoleto (los nombres de Gemini cambian a
   // menudo) — antes de rendirnos, reintentamos una vez con uno más estable.
   if (res.status === 404 && modelId !== FALLBACK_MODEL) {
-    ;({ res, data } = await callGemini(FALLBACK_MODEL, parts, apiKey))
+    ;({ res, data } = await callGemini(FALLBACK_MODEL, parts, apiKey, schema))
   }
 
   if (!res.ok) {

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import Sheet from '../ui/Sheet'
+import PrimaryButton from '../ui/PrimaryButton'
 import { INGREDIENTS } from '../../data/ingredients'
 
 const UNITS = ['ud', 'g', 'kg', 'ml', 'l', 'diente', 'rebanada']
@@ -115,12 +116,12 @@ export default function AddProductModal({ open, onClose, onAdd, title = 'Añadir
           </div>
         </div>
 
-        <button
+        <PrimaryButton
           type="submit"
-          className="w-full rounded-2xl bg-primary-500 py-3.5 text-[15px] font-semibold text-white active:scale-[0.98] transition mt-1"
+          className="w-full rounded-2xl bg-primary-500 py-3.5 text-[15px] font-semibold text-white transition-colors mt-1"
         >
           {submitLabel}
-        </button>
+        </PrimaryButton>
       </form>
     </Sheet>
   )

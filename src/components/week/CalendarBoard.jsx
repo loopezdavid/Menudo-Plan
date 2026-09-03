@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { DndContext, DragOverlay, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core'
-import { MoreHorizontal, Download } from 'lucide-react'
+import { MoreHorizontal, Download, Share2, Loader2 } from 'lucide-react'
 import CalendarGrid from './CalendarGrid'
 import RecipeTray from './RecipeTray'
 import WeekNav from './WeekNav'
 import WeekStats from './WeekStats'
+import WeekNutritionSummary from './WeekNutritionSummary'
 import WeekActionsSheet from './WeekActionsSheet'
 import RecipePickerSheet from './RecipePickerSheet'
 import AddToCalendarSheet from '../recipes/AddToCalendarSheet'
@@ -15,6 +16,7 @@ import { getWeekStart } from '../../utils/date'
 import { getAnyRecipe } from '../../utils/recipeLookup'
 import { CATEGORY_TAGS } from '../../data/categoryTags'
 import { printWeek } from '../../utils/print'
+import { buildWeekPosterBlob, shareOrDownloadPoster } from '../../utils/shareWeekImage'
 
 const SLOT_LABELS = Object.fromEntries(SLOTS.map((s) => [s.key, s.group ? `${s.group} · ${s.label}` : s.label]))
 
@@ -38,6 +40,7 @@ export default function CalendarBoard() {
   const [quickAddId, setQuickAddId] = useState(null)
   const [trayOpen, setTrayOpen] = useState(false)
   const [activeDrag, setActiveDrag] = useState(null)
+  const [sharingImage, setSharingImage] = useState(false)
 
   const plan = weekPlans[activeWeekKey] || emptyWeek()
   const weekStart = getWeekStart(activeWeekKey)
@@ -81,6 +84,19 @@ export default function CalendarBoard() {
     printWeek({ weekKey: activeWeekKey, plan, peopleCount })
   }
 
+  async function handleShareImage() {
+    if (sharingImage) return
+    setSharingImage(true)
+    try {
+      const blob = await buildWeekPosterBlob({ weekKey: activeWeekKey, plan })
+      await shareOrDownloadPoster(blob, `menu-semanal-${activeWeekKey}.png`)
+    } catch (err) {
+      console.warn('No se pudo generar la imagen de la semana.', err)
+    } finally {
+      setSharingImage(false)
+    }
+  }
+
   const dragRecipe = activeDrag?.recipeId ? getAnyRecipe(activeDrag.recipeId) : null
   const dragTag = dragRecipe ? CATEGORY_TAGS[dragRecipe.categories[0]] : null
 
@@ -92,6 +108,15 @@ export default function CalendarBoard() {
             <WeekNav weekKey={activeWeekKey} onPrev={goToPrevWeek} onNext={goToNextWeek} onToday={goToCurrentWeek} />
           </div>
           <div className="flex gap-2 shrink-0">
+            <button
+              onClick={handleShareImage}
+              disabled={sharingImage}
+              className="h-9 w-9 rounded-full bg-surface border border-border flex items-center justify-center text-text-muted active:scale-90 transition disabled:opacity-60"
+              aria-label="Compartir imagen de la semana"
+              title="Compartir imagen de la semana"
+            >
+              {sharingImage ? <Loader2 size={16} className="animate-spin" /> : <Share2 size={16} />}
+            </button>
             <button
               onClick={handleDownloadWeek}
               className="h-9 w-9 rounded-full bg-surface border border-border flex items-center justify-center text-text-muted active:scale-90 transition"
@@ -111,6 +136,7 @@ export default function CalendarBoard() {
         </div>
 
         {stats && <WeekStats counts={stats.counts} total={stats.total} />}
+        {stats && <WeekNutritionSummary nutrition={stats.nutrition} total={stats.total} />}
 
         <div className="md:flex md:items-start md:gap-5 pb-28 md:pb-6">
           <div className="md:flex-1 md:min-w-0">

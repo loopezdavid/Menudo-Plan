@@ -7,13 +7,13 @@ const JSON_SHAPE_HINT =
   '{"found": boolean, "name": string, "category": string|null, "servings": number|null, "timeMinutes": number|null, ' +
   '"imageUrl": string|null, "ingredients": [{"name": string, "quantity": number, "unit": string}], "steps": [string]}'
 
-export async function extract({ instructionText, bodyText, image, apiKey, model }) {
+export async function extract({ instructionText, bodyText, image, apiKey, model, jsonShapeHint }) {
   if (!apiKey) throw new Error('Falta la API key de OpenRouter (Ajustes → Importar con IA).')
   if (!model?.trim()) {
     throw new Error('Indica qué modelo de OpenRouter usar en Ajustes (p.ej. "google/gemini-2.0-flash-001").')
   }
 
-  const text = `${bodyText ? `${instructionText}\n\n${bodyText}` : instructionText}\n\n${JSON_SHAPE_HINT}`
+  const text = `${bodyText ? `${instructionText}\n\n${bodyText}` : instructionText}\n\n${jsonShapeHint || JSON_SHAPE_HINT}`
   const content = [{ type: 'text', text }]
   if (image) content.push({ type: 'image_url', image_url: { url: `data:${image.mediaType};base64,${image.base64}` } })
 

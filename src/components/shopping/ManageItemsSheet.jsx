@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Pencil, Trash2, Plus } from 'lucide-react'
+import { Pencil, Trash2, Plus, Package, PackageCheck } from 'lucide-react'
 import Sheet from '../ui/Sheet'
 import AddProductModal from './AddProductModal'
 import { useStore } from '../../store/useStore'
@@ -13,6 +13,7 @@ export default function ManageItemsSheet({ open, onClose, weekKey }) {
   const addFixedHomeItem = useStore((s) => s.addFixedHomeItem)
   const updateFixedHomeItem = useStore((s) => s.updateFixedHomeItem)
   const removeFixedHomeItem = useStore((s) => s.removeFixedHomeItem)
+  const togglePantryStock = useStore((s) => s.togglePantryStock)
 
   const [editing, setEditing] = useState(null) // { scope: 'manual'|'fixed', item }
   const [addingScope, setAddingScope] = useState(null) // 'manual' | 'fixed'
@@ -47,7 +48,9 @@ export default function ManageItemsSheet({ open, onClose, weekKey }) {
 
         <section className="mb-4">
           <h3 className="text-[15px] font-semibold text-text mb-2">🏠 Artículos fijos de casa</h3>
-          <p className="text-[12px] text-text-muted mb-2 -mt-1">Se añaden automáticamente cada semana.</p>
+          <p className="text-[12px] text-text-muted mb-2 -mt-1">
+            Se añaden cada semana, salvo que marques que ya los tienes en la despensa.
+          </p>
           <div className="flex flex-col gap-2 mb-2">
             {fixedHomeItems.map((item) => (
               <ItemRow
@@ -55,6 +58,7 @@ export default function ManageItemsSheet({ open, onClose, weekKey }) {
                 item={item}
                 onEdit={() => setEditing({ scope: 'fixed', item })}
                 onRemove={() => removeFixedHomeItem(item.id)}
+                onTogglePantry={() => togglePantryStock(item.id)}
               />
             ))}
           </div>
@@ -92,15 +96,27 @@ export default function ManageItemsSheet({ open, onClose, weekKey }) {
   )
 }
 
-function ItemRow({ item, onEdit, onRemove }) {
+function ItemRow({ item, onEdit, onRemove, onTogglePantry }) {
   return (
     <div className="flex items-center gap-2 rounded-xl border border-border bg-surface p-2.5">
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-text truncate">{item.name}</p>
+        <p className={`text-sm font-medium truncate ${item.inStock ? 'text-text-soft line-through' : 'text-text'}`}>{item.name}</p>
         <p className="text-[11px] text-text-muted">
           {item.quantity} {item.unit}
         </p>
       </div>
+      {onTogglePantry && (
+        <button
+          onClick={onTogglePantry}
+          className={`h-8 w-8 rounded-full flex items-center justify-center active:scale-90 transition ${
+            item.inStock ? 'bg-primary-50 text-primary-600' : 'bg-surface-2 text-text-muted'
+          }`}
+          aria-label={item.inStock ? 'Ya lo tienes — pulsa cuando se acabe' : 'Marcar que ya lo tienes en casa'}
+          title={item.inStock ? 'En despensa — pulsa cuando se acabe' : 'Marcar que ya lo tienes'}
+        >
+          {item.inStock ? <PackageCheck size={14} /> : <Package size={14} />}
+        </button>
+      )}
       <button onClick={onEdit} className="h-8 w-8 rounded-full bg-surface-2 flex items-center justify-center active:scale-90 transition">
         <Pencil size={13} className="text-text-muted" />
       </button>

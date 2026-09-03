@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Clock, Flame, Drumstick, Minus, Plus, Heart, CalendarPlus, ChefHat, Download, ExternalLink, Pencil } from 'lucide-react'
 import Sheet from '../ui/Sheet'
 import Chip from '../ui/Chip'
+import PrimaryButton from '../ui/PrimaryButton'
 import RecipeImage from './RecipeImage'
 import RecipeForm from './RecipeForm'
 import AddToCalendarSheet from './AddToCalendarSheet'
@@ -70,13 +71,13 @@ export default function RecipeDetailSheet({ recipeId, open, onClose }) {
         title={editOpen ? 'Editar receta' : undefined}
         footer={
           !editOpen && (
-            <button
+            <PrimaryButton
               onClick={() => setAddOpen(true)}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary-500 py-3.5 text-[15px] font-semibold text-white active:scale-[0.98] transition shadow-sm"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary-500 py-3.5 text-[15px] font-semibold text-white transition-colors shadow-sm"
             >
               <CalendarPlus size={18} />
               Añadir al calendario
-            </button>
+            </PrimaryButton>
           )
         }
       >

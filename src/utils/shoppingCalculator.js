@@ -14,6 +14,7 @@ export function calculateShoppingList({
   checked = {},
   peopleCount = 2,
   lookupRecipe = getRecipe,
+  categoryOrder = null,
 }) {
   const scale = peopleCount / 2
   const lines = new Map() // key: `${ingredientId}__${unit}` -> line
@@ -77,8 +78,10 @@ export function calculateShoppingList({
     })
   }
 
-  // 3. Artículos fijos de casa (se repiten cada semana)
+  // 3. Artículos fijos de casa (se repiten cada semana, salvo los que ya
+  // haya en la despensa — inStock: true — hasta que se marquen como gastados)
   for (const item of fixedHomeItems) {
+    if (item.inStock) continue
     addLine({
       ingredientId: item.ingredientId || null,
       name: item.name,
@@ -107,8 +110,13 @@ export function calculateShoppingList({
   const total = allLines.length
   const checkedCount = allLines.filter((l) => l.checked).length
 
+  const orderIndex = categoryOrder ? Object.fromEntries(categoryOrder.map((id, i) => [id, i])) : null
   const categories = Object.entries(CATEGORIES)
-    .sort((a, b) => a[1].order - b[1].order)
+    .sort((a, b) => {
+      const orderA = orderIndex && orderIndex[a[0]] !== undefined ? orderIndex[a[0]] : a[1].order + 1000
+      const orderB = orderIndex && orderIndex[b[0]] !== undefined ? orderIndex[b[0]] : b[1].order + 1000
+      return orderA - orderB
+    })
     .map(([id, meta]) => ({ id, ...meta, items: grouped[id] }))
     .filter((c) => c.items.length > 0)
 

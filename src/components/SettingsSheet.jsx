@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { Sun, Moon, Monitor, Minus, Plus, Users, ChevronDown, Image as ImageIcon, Globe, Check, Sparkles } from 'lucide-react'
+import { Sun, Moon, Monitor, Minus, Plus, Users, ChevronDown, Image as ImageIcon, Globe, Check, Sparkles, Bell, BellOff } from 'lucide-react'
 import Sheet from './ui/Sheet'
 import { useStore } from '../store/useStore'
 import { getRecipe } from '../data/recipes'
@@ -12,6 +12,8 @@ const THEME_OPTIONS = [
   { key: 'light', label: 'Claro', icon: Sun },
   { key: 'dark', label: 'Oscuro', icon: Moon },
 ]
+
+const WEEKDAY_NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
 const AI_ENGINE_CONFIG = {
   claude: {
@@ -49,9 +51,23 @@ export default function SettingsSheet({ open, onClose }) {
   const setApiKey = useStore((s) => s.setApiKey)
   const aiEngine = useStore((s) => s.settings.aiEngine)
   const setAiEngine = useStore((s) => s.setAiEngine)
+  const reminders = useStore((s) => s.settings.reminders)
+  const setReminderSetting = useStore((s) => s.setReminderSetting)
   const [creditsOpen, setCreditsOpen] = useState(false)
+  const [notifPermission, setNotifPermission] = useState(
+    typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
+  )
   const activeAiConfig = AI_ENGINE_CONFIG[aiEngine] || AI_ENGINE_CONFIG.claude
   const reduceMotion = useReducedMotion()
+
+  async function handleToggleReminder(field, value) {
+    if (value && typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      const result = await Notification.requestPermission()
+      setNotifPermission(result)
+      if (result !== 'granted') return
+    }
+    setReminderSetting(field, value)
+  }
 
   return (
     <Sheet open={open} onClose={onClose} title="Ajustes">
@@ -113,6 +129,38 @@ export default function SettingsSheet({ open, onClose }) {
                 <Plus size={15} />
               </button>
             </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 className="text-[13px] font-semibold text-text-muted mb-2.5">Recordatorios</h3>
+          <p className="text-[12px] text-text-muted leading-relaxed mb-3">
+            Avisos locales del navegador — solo funcionan mientras abras la app (o la tengas instalada) ese
+            día, no es un aviso garantizado en segundo plano.
+          </p>
+          {notifPermission === 'denied' && (
+            <div className="flex items-center gap-2 rounded-2xl bg-amber-50 text-amber-700 px-3.5 py-2.5 mb-3 text-[12px]">
+              <BellOff size={14} className="shrink-0" />
+              Bloqueaste las notificaciones para esta web — actívalas desde los ajustes del navegador si quieres usar esto.
+            </div>
+          )}
+          <div className="flex flex-col gap-3">
+            <ReminderRow
+              icon={Bell}
+              title="Planificar la semana"
+              enabled={reminders?.planningEnabled}
+              day={reminders?.planningDay}
+              onToggle={(v) => handleToggleReminder('planningEnabled', v)}
+              onDayChange={(d) => setReminderSetting('planningDay', d)}
+            />
+            <ReminderRow
+              icon={Bell}
+              title="Hacer la compra"
+              enabled={reminders?.shoppingEnabled}
+              day={reminders?.shoppingDay}
+              onToggle={(v) => handleToggleReminder('shoppingEnabled', v)}
+              onDayChange={(d) => setReminderSetting('shoppingDay', d)}
+            />
           </div>
         </section>
 
@@ -267,5 +315,44 @@ export default function SettingsSheet({ open, onClose }) {
         </section>
       </div>
     </Sheet>
+  )
+}
+
+function ReminderRow({ icon: Icon, title, enabled, day, onToggle, onDayChange }) {
+  return (
+    <div className="rounded-2xl bg-surface-2 px-4 py-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <Icon size={15} className={enabled ? 'text-primary-500' : 'text-text-muted'} />
+          <p className="text-sm font-semibold text-text truncate">{title}</p>
+        </div>
+        <button
+          onClick={() => onToggle(!enabled)}
+          className={`shrink-0 h-6 w-11 rounded-full transition relative ${enabled ? 'bg-primary-500' : 'bg-surface border border-border'}`}
+          role="switch"
+          aria-checked={enabled}
+          aria-label={title}
+        >
+          <span
+            className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+              enabled ? 'translate-x-5' : 'translate-x-0.5'
+            }`}
+          />
+        </button>
+      </div>
+      {enabled && (
+        <select
+          value={day}
+          onChange={(e) => onDayChange(Number(e.target.value))}
+          className="w-full mt-2.5 rounded-xl bg-surface border border-border focus:border-primary-200 focus:outline-none px-3 py-2 text-[13px] text-text"
+        >
+          {WEEKDAY_NAMES.map((name, i) => (
+            <option key={i} value={i}>
+              {name}
+            </option>
+          ))}
+        </select>
+      )}
+    </div>
   )
 }

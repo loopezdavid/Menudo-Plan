@@ -9,6 +9,8 @@ import ShoppingListView from './components/shopping/ShoppingListView'
 import SettingsSheet from './components/SettingsSheet'
 import IconButton from './components/ui/IconButton'
 import { useTheme } from './hooks/useTheme'
+import { useReminders } from './hooks/useReminders'
+import { useRealtimeSync } from './hooks/useRealtimeSync'
 import { useStore } from './store/useStore'
 import { calculateShoppingList } from './utils/shoppingCalculator'
 import { getAnyRecipe } from './utils/recipeLookup'
@@ -21,6 +23,8 @@ const TITLES = {
 
 export default function App() {
   useTheme()
+  useReminders()
+  useRealtimeSync()
   const reduceMotion = useReducedMotion()
   const [tab, setTab] = useState('week')
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -31,6 +35,7 @@ export default function App() {
   const fixedHomeItems = useStore((s) => s.fixedHomeItems)
   const checked = useStore((s) => s.checkedItems[activeWeekKey])
   const peopleCount = useStore((s) => s.settings.peopleCount)
+  const categoryOrder = useStore((s) => s.settings.categoryOrder)
   const externalRecipes = useStore((s) => s.externalRecipes)
 
   const shoppingList = useMemo(
@@ -42,11 +47,12 @@ export default function App() {
         checked: checked || {},
         peopleCount,
         lookupRecipe: getAnyRecipe,
+        categoryOrder,
       }),
     // externalRecipes: getAnyRecipe lee el store directamente (getState), no es un
     // argumento reactivo — pero necesitamos recalcular cuando cambie.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [weekPlan, manualItems, fixedHomeItems, checked, peopleCount, externalRecipes]
+    [weekPlan, manualItems, fixedHomeItems, checked, peopleCount, externalRecipes, categoryOrder]
   )
 
   const pendingCount = shoppingList.total - shoppingList.checkedCount

@@ -18,6 +18,21 @@ const DEBOUNCE_MS = 900
 
 let pushTimer = null
 
+// Se guarda el timestamp de la última escritura propia para que el hook de
+// sincronización en tiempo real (useRealtimeSync) pueda distinguir "esto lo
+// acabo de subir yo" de "esto lo ha cambiado otro dispositivo", y así no
+// se reaplique en bucle lo que ya tenemos.
+export let lastPushedAt = null
+
+// Cuando useRealtimeSync aplica un cambio recibido de otro dispositivo, marca
+// esta bandera para que el setItem que dispara zustand/persist justo después
+// no lo vuelva a subir a Supabase (si no, cada cambio remoto rebotaría de
+// dispositivo en dispositivo sin parar).
+let skipNextPush = false
+export function markRemoteApplied() {
+  skipNextPush = true
+}
+
 async function fetchCloud() {
   try {
     const { data, error } = await supabase
@@ -38,11 +53,13 @@ async function fetchCloud() {
 function pushCloud(valueObj) {
   clearTimeout(pushTimer)
   pushTimer = setTimeout(async () => {
+    const stamp = new Date().toISOString()
     try {
       const { error } = await supabase
         .from('app_state')
-        .upsert({ id: ROW_ID, data: valueObj, updated_at: new Date().toISOString() })
+        .upsert({ id: ROW_ID, data: valueObj, updated_at: stamp })
       if (error) throw error
+      lastPushedAt = stamp
     } catch (err) {
       console.warn('MenuSemanal: no se pudo sincronizar con Supabase.', err.message)
     }
@@ -62,6 +79,10 @@ export const supabaseStorage = {
   },
   setItem(name, value) {
     localStorage.setItem(name, value)
+    if (skipNextPush) {
+      skipNextPush = false
+      return
+    }
     try {
       pushCloud(JSON.parse(value))
     } catch {

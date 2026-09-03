@@ -1,14 +1,17 @@
 import { useState } from 'react'
-import { Plus, ListChecks, Share2 } from 'lucide-react'
+import { Plus, ListChecks, Share2, ArrowDownUp } from 'lucide-react'
 import ShoppingCategorySection from './ShoppingCategorySection'
 import ProgressBar from '../ui/ProgressBar'
 import AddProductModal from './AddProductModal'
 import ManageItemsSheet from './ManageItemsSheet'
+import ReorderCategoriesSheet from './ReorderCategoriesSheet'
+import PrimaryButton from '../ui/PrimaryButton'
 import { useStore } from '../../store/useStore'
 
 export default function ShoppingListView({ shoppingList, weekKey }) {
   const [addOpen, setAddOpen] = useState(false)
   const [manageOpen, setManageOpen] = useState(false)
+  const [reorderOpen, setReorderOpen] = useState(false)
   const toggleChecked = useStore((s) => s.toggleChecked)
   const addManualItem = useStore((s) => s.addManualItem)
 
@@ -45,18 +48,26 @@ export default function ShoppingListView({ shoppingList, weekKey }) {
       </div>
 
       <div className="flex gap-2 mb-5">
-        <button
+        <PrimaryButton
           onClick={() => setAddOpen(true)}
-          className="flex-1 flex items-center justify-center gap-1.5 rounded-2xl bg-primary-500 py-3 text-[13.5px] font-semibold text-white active:scale-[0.98] transition"
+          className="flex-1 flex items-center justify-center gap-1.5 rounded-2xl bg-primary-500 py-3 text-[13.5px] font-semibold text-white transition-colors"
         >
           <Plus size={16} /> Añadir producto
-        </button>
+        </PrimaryButton>
         <button
           onClick={() => setManageOpen(true)}
           className="h-[46px] w-[46px] shrink-0 rounded-2xl bg-surface-2 flex items-center justify-center active:scale-95 transition text-text-muted"
           aria-label="Gestionar productos"
         >
           <ListChecks size={18} />
+        </button>
+        <button
+          onClick={() => setReorderOpen(true)}
+          className="h-[46px] w-[46px] shrink-0 rounded-2xl bg-surface-2 flex items-center justify-center active:scale-95 transition text-text-muted"
+          aria-label="Ordenar secciones"
+          title="Ordenar secciones"
+        >
+          <ArrowDownUp size={17} />
         </button>
         <button
           onClick={handleShare}
@@ -85,6 +96,7 @@ export default function ShoppingListView({ shoppingList, weekKey }) {
         onAdd={(data) => addManualItem(weekKey, data)}
       />
       <ManageItemsSheet open={manageOpen} onClose={() => setManageOpen(false)} weekKey={weekKey} />
+      <ReorderCategoriesSheet open={reorderOpen} onClose={() => setReorderOpen(false)} />
     </div>
   )
 }

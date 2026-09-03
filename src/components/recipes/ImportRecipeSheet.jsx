@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { PenLine, FileText, Link2, Camera, Loader2, AlertTriangle, Sparkles } from 'lucide-react'
 import Sheet from '../ui/Sheet'
+import PrimaryButton from '../ui/PrimaryButton'
 import RecipeForm from './RecipeForm'
 import { useStore } from '../../store/useStore'
 import {
@@ -179,14 +180,14 @@ export default function ImportRecipeSheet({ open, onClose, onSaved }) {
             placeholder="Pega el texto de una receta, o escribe solo el nombre de un plato (p.ej. «tortilla de patatas») y te la genera"
             className="w-full rounded-2xl bg-surface-2 border border-transparent focus:border-primary-200 focus:outline-none px-3.5 py-3 text-sm text-text placeholder:text-text-soft resize-none"
           />
-          <button
+          <PrimaryButton
             onClick={handleExtractText}
             disabled={!text.trim() || extracting || needsKey}
-            className="flex items-center justify-center gap-2 rounded-2xl bg-primary-500 py-3 text-sm font-semibold text-white active:scale-[0.98] transition disabled:opacity-40"
+            className="flex items-center justify-center gap-2 rounded-2xl bg-primary-500 py-3 text-sm font-semibold text-white transition-colors disabled:opacity-40"
           >
             {extracting ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
             {extracting ? 'Leyendo receta…' : 'Extraer receta con IA'}
-          </button>
+          </PrimaryButton>
         </div>
       )}
 
@@ -198,14 +199,14 @@ export default function ImportRecipeSheet({ open, onClose, onSaved }) {
             placeholder="https://..."
             className="w-full rounded-2xl bg-surface-2 border border-transparent focus:border-primary-200 focus:outline-none px-3.5 py-3 text-sm text-text placeholder:text-text-soft"
           />
-          <button
+          <PrimaryButton
             onClick={handleExtractUrl}
             disabled={!url.trim() || extracting || needsKey}
-            className="flex items-center justify-center gap-2 rounded-2xl bg-primary-500 py-3 text-sm font-semibold text-white active:scale-[0.98] transition disabled:opacity-40"
+            className="flex items-center justify-center gap-2 rounded-2xl bg-primary-500 py-3 text-sm font-semibold text-white transition-colors disabled:opacity-40"
           >
             {extracting ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
             {extracting ? 'Leyendo la página…' : 'Extraer receta con IA'}
-          </button>
+          </PrimaryButton>
         </div>
       )}
 
@@ -234,14 +235,14 @@ export default function ImportRecipeSheet({ open, onClose, onSaved }) {
               <span className="text-sm font-medium">Toca para elegir una foto</span>
             </button>
           )}
-          <button
+          <PrimaryButton
             onClick={handleExtractPhoto}
             disabled={!photoFile || extracting || needsKey}
-            className="flex items-center justify-center gap-2 rounded-2xl bg-primary-500 py-3 text-sm font-semibold text-white active:scale-[0.98] transition disabled:opacity-40"
+            className="flex items-center justify-center gap-2 rounded-2xl bg-primary-500 py-3 text-sm font-semibold text-white transition-colors disabled:opacity-40"
           >
             {extracting ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
             {extracting ? 'Leyendo la foto…' : 'Extraer receta con IA'}
-          </button>
+          </PrimaryButton>
         </div>
       )}
 

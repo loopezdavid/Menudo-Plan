@@ -3,6 +3,7 @@
 // dispositivo salvo hacia la API del proveedor correspondiente).
 import { classifyIngredient } from '../utils/ingredientMatch'
 import { mapExternalCategory } from './recipeProviders/categoryMap'
+import { DAYS, SLOTS } from '../data/initialWeekPlan'
 
 export const AI_ENGINES = {
   claude: { label: 'Claude', loader: () => import('./aiProviders/claude') },
@@ -101,6 +102,83 @@ export async function extractRecipeFromUrl(url, aiConfig) {
 export async function extractRecipeFromImage(base64, mediaType, aiConfig) {
   const extracted = await callAI(aiConfig, { image: { base64, mediaType } })
   return normalize(extracted)
+}
+
+const SLOT_LABELS = Object.fromEntries(SLOTS.map((s) => [s.key, s.group ? `${s.group} ${s.label}` : s.label]))
+
+function buildWeekPrompt(constraints) {
+  return `Eres un planificador de menús semanales. Te doy un catálogo de recetas disponibles (id | nombre | categorías | minutos | kcal) y tienes que rellenar un calendario de lunes a domingo, con estas franjas cada día: ${SLOTS.map((s) => SLOT_LABELS[s.key]).join(', ')}.
+
+Reglas:
+- Usa SOLO ids del catálogo que te doy — no inventes ids ni recetas nuevas.
+- No repitas la misma receta más de 2 veces en toda la semana, y evita repetirla en días seguidos.
+- Reparte bien las categorías (pescado, carne, pollo, legumbres, pasta/arroz...) a lo largo de la semana — variedad ante todo.
+- Si no hay ninguna receta adecuada para un hueco, dejalo como null en vez de forzar una mala combinación.
+- Preferencias del usuario para esta semana: ${constraints?.trim() || 'ninguna en concreto — prioriza variedad y equilibrio.'}
+- Responde con un id de receta (o null) para cada día y cada franja, usando exactamente estas claves de día: ${DAYS.map((d) => d.key).join(', ')}; y estas claves de franja: ${SLOTS.map((s) => s.key).join(', ')}.`
+}
+
+function weekResultToAssignments(result, validIds) {
+  const assignments = {}
+  for (const day of DAYS) {
+    const daySlots = result?.[day.key]
+    if (!daySlots) continue
+    const slots = {}
+    for (const slot of SLOTS) {
+      const recipeId = daySlots[slot.key]
+      slots[slot.key] = recipeId && validIds.has(recipeId) ? recipeId : null
+    }
+    assignments[day.key] = slots
+  }
+  return assignments
+}
+
+// Le pide al motor de IA elegido que rellene una semana entera escogiendo
+// SOLO entre las recetas ya disponibles (locales + guardadas) — así el
+// resultado sigue funcionando con la lista de la compra y el resto de la
+// app sin necesitar inventar recetas nuevas.
+export async function generateWeekWithAI({ constraints, availableRecipes, aiConfig }) {
+  const catalogText = availableRecipes
+    .map((r) => `${r.id} | ${r.name} | ${r.categories.join(',')} | ${r.time || '?'} min | ${r.kcal || '?'} kcal`)
+    .join('\n')
+  const instructionText = buildWeekPrompt(constraints)
+  const bodyText = `Catálogo de recetas disponibles:\n${catalogText}`
+
+  const zodSchemaBuilder = (z) => {
+    const daySlotShape = z.object(Object.fromEntries(SLOTS.map((s) => [s.key, z.string().nullable()])))
+    return z.object(Object.fromEntries(DAYS.map((d) => [d.key, daySlotShape])))
+  }
+  const slotProps = Object.fromEntries(SLOTS.map((s) => [s.key, { type: 'STRING', nullable: true }]))
+  const responseSchema = {
+    type: 'OBJECT',
+    properties: Object.fromEntries(DAYS.map((d) => [d.key, { type: 'OBJECT', properties: slotProps }])),
+  }
+  const exampleDay = `{${SLOTS.map((s) => `"${s.key}": "id-receta-o-null"`).join(', ')}}`
+  const jsonShapeHint = `Responde ÚNICAMENTE con un JSON válido (sin bloque de código, sin texto antes ni después) con esta forma exacta, una entrada por cada día: {${DAYS.map((d) => `"${d.key}": ${exampleDay}`).join(', ')}}`
+
+  const def = AI_ENGINES[aiConfig.engine]
+  if (!def) throw new Error('Motor de IA no reconocido — elige uno en Ajustes.')
+  const mod = await def.loader()
+  const result = await mod.extract({
+    instructionText,
+    bodyText,
+    apiKey: aiConfig.apiKey,
+    model: aiConfig.model,
+    zodSchemaBuilder,
+    responseSchema,
+    jsonShapeHint,
+  })
+
+  const validIds = new Set(availableRecipes.map((r) => r.id))
+  const assignments = weekResultToAssignments(result, validIds)
+  const filledCount = Object.values(assignments).reduce(
+    (n, slots) => n + Object.values(slots).filter(Boolean).length,
+    0
+  )
+  if (!filledCount) {
+    throw new Error('La IA no ha podido asignar ninguna receta. Prueba a cambiar las preferencias o revisa tu recetario.')
+  }
+  return assignments
 }
 
 // Lector de páginas sin backend propio: r.jina.ai convierte cualquier URL en

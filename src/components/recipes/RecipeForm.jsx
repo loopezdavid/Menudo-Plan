@@ -4,6 +4,7 @@ import { CATEGORY_TAGS } from '../../data/categoryTags'
 import { classifyIngredient } from '../../utils/ingredientMatch'
 import { searchDishPhotos, searchGoogleImages } from '../../services/imageSearch'
 import { useStore } from '../../store/useStore'
+import PrimaryButton from '../ui/PrimaryButton'
 
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 const MAX_IMAGE_DIM = 1024
@@ -448,13 +449,13 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
             Cancelar
           </button>
         )}
-        <button
+        <PrimaryButton
           onClick={handleSave}
           disabled={!canSave}
-          className="flex-1 rounded-2xl bg-primary-500 py-3 text-sm font-semibold text-white active:scale-[0.98] transition disabled:opacity-40"
+          className="flex-1 rounded-2xl bg-primary-500 py-3 text-sm font-semibold text-white transition-colors disabled:opacity-40"
         >
           Guardar receta
-        </button>
+        </PrimaryButton>
       </div>
     </div>
   )

@@ -36,10 +36,19 @@ export const useStore = create(
       // Se guardan aquí para seguir disponibles (calendario, lista de la
       // compra, PDF) incluso sin red.
       externalRecipes: {},
+      // Semanas guardadas como plantilla reutilizable: [{ id, name, createdAt, plan }]
+      weekTemplates: [],
       settings: {
         peopleCount: 2,
         themeMode: 'system', // 'system' | 'light' | 'dark'
         aiEngine: 'claude', // 'claude' | 'gemini' | 'mistral' | 'openrouter' — motor para Importar receta
+        categoryOrder: null, // null = orden por defecto; si no, array de ids de categoría
+        reminders: {
+          planningEnabled: false,
+          planningDay: 0, // 0=domingo ... 6=sábado (getDay())
+          shoppingEnabled: false,
+          shoppingDay: 5,
+        },
         apiKeys: {
           spoonacular: '',
           edamamAppId: '',
@@ -167,10 +176,10 @@ export const useStore = create(
           }
         }),
 
-      // ------- artículos fijos de casa -------
+      // ------- artículos fijos de casa (despensa) -------
       addFixedHomeItem: (item) =>
         set((s) => ({
-          fixedHomeItems: [...s.fixedHomeItems, { id: uid('fixed'), ingredientId: null, unit: 'ud', quantity: 1, ...item }],
+          fixedHomeItems: [...s.fixedHomeItems, { id: uid('fixed'), ingredientId: null, unit: 'ud', quantity: 1, inStock: false, ...item }],
         })),
       updateFixedHomeItem: (id, patch) =>
         set((s) => ({
@@ -178,6 +187,38 @@ export const useStore = create(
         })),
       removeFixedHomeItem: (id) =>
         set((s) => ({ fixedHomeItems: s.fixedHomeItems.filter((it) => it.id !== id) })),
+      // "Ya lo tengo" — mientras esté marcado, no sale en la lista de la compra.
+      togglePantryStock: (id) =>
+        set((s) => ({
+          fixedHomeItems: s.fixedHomeItems.map((it) => (it.id === id ? { ...it, inStock: !it.inStock } : it)),
+        })),
+
+      // ------- plantillas de semana -------
+      saveWeekTemplate: (name, weekKeyArg) =>
+        set((s) => {
+          const plan = s.weekPlans[weekKeyArg] || emptyWeek()
+          const template = { id: uid('tpl'), name: name.trim() || 'Plantilla', createdAt: Date.now(), plan: JSON.parse(JSON.stringify(plan)) }
+          return { weekTemplates: [...s.weekTemplates, template] }
+        }),
+      applyWeekTemplate: (templateId, weekKeyArg) =>
+        set((s) => {
+          const template = s.weekTemplates.find((t) => t.id === templateId)
+          if (!template) return {}
+          return { weekPlans: { ...s.weekPlans, [weekKeyArg]: JSON.parse(JSON.stringify(template.plan)) } }
+        }),
+      deleteWeekTemplate: (templateId) =>
+        set((s) => ({ weekTemplates: s.weekTemplates.filter((t) => t.id !== templateId) })),
+
+      // ------- aplicar una semana generada por IA (solo huecos indicados) -------
+      applyWeekAssignments: (weekKeyArg, assignments) =>
+        set((s) => {
+          const current = s.weekPlans[weekKeyArg] || emptyWeek()
+          const next = { ...current }
+          for (const [dayKey, slots] of Object.entries(assignments)) {
+            next[dayKey] = { ...next[dayKey], ...slots }
+          }
+          return { weekPlans: { ...s.weekPlans, [weekKeyArg]: next } }
+        }),
 
       // ------- favoritos / recientes -------
       toggleFavorite: (recipeId) =>
@@ -194,6 +235,9 @@ export const useStore = create(
       setApiKey: (field, value) =>
         set((s) => ({ settings: { ...s.settings, apiKeys: { ...s.settings.apiKeys, [field]: value } } })),
       setAiEngine: (engine) => set((s) => ({ settings: { ...s.settings, aiEngine: engine } })),
+      setCategoryOrder: (order) => set((s) => ({ settings: { ...s.settings, categoryOrder: order } })),
+      setReminderSetting: (field, value) =>
+        set((s) => ({ settings: { ...s.settings, reminders: { ...s.settings.reminders, [field]: value } } })),
 
       // ------- recetas externas (bancos online) -------
       cacheExternalRecipe: (recipe) =>
@@ -201,7 +245,7 @@ export const useStore = create(
     }),
     {
       name: 'menusemanal-storage',
-      version: 5,
+      version: 6,
       storage: createJSONStorage(() => supabaseStorage),
       migrate: (persisted, version) => {
         if (version < 2) {
@@ -260,6 +304,21 @@ export const useStore = create(
             },
           }
         }
+        if (version < 6) {
+          persisted.weekTemplates = persisted.weekTemplates || []
+          persisted.settings = {
+            ...persisted.settings,
+            categoryOrder: null,
+            reminders: {
+              planningEnabled: false,
+              planningDay: 0,
+              shoppingEnabled: false,
+              shoppingDay: 5,
+              ...persisted.settings?.reminders,
+            },
+          }
+          persisted.fixedHomeItems = (persisted.fixedHomeItems || []).map((it) => ({ inStock: false, ...it }))
+        }
         return persisted
       },
     }
@@ -271,6 +330,9 @@ export function weekStatsForKey(weekKeyArg, weekPlans, lookupRecipe = getRecipe)
   if (!plan) return null
   const counts = {}
   let total = 0
+  let kcal = 0
+  let protein = 0
+  let withKcal = 0
   for (const dayKey of Object.keys(plan)) {
     for (const slot of SLOTS) {
       const recipeId = plan[dayKey]?.[slot.key]
@@ -281,9 +343,14 @@ export function weekStatsForKey(weekKeyArg, weekPlans, lookupRecipe = getRecipe)
       for (const tag of recipe.categories) {
         counts[tag] = (counts[tag] || 0) + 1
       }
+      if (recipe.kcal) {
+        kcal += recipe.kcal
+        withKcal += 1
+      }
+      if (recipe.protein) protein += recipe.protein
     }
   }
-  return { counts, total }
+  return { counts, total, nutrition: { kcal, protein, withKcal } }
 }
 
 export { TODAY_KEY }
